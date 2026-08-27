@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="section-page">
+    <h2>Maintenance</h2>
+    <p>Cleanup, updates, and power actions. Restart and Shutdown ask for confirmation and schedule a 5-second delay.</p>
+    <div class="tool-grid">
+        <button type="button" class="tool-tile" data-tool="disk_cleanup">
+            <i class="bi bi-trash"></i>
+            <strong>Disk Cleanup</strong>
+            <small>Launch cleanmgr.exe</small>
+        </button>
+        <button type="button" class="tool-tile" data-tool="windows_update">
+            <i class="bi bi-download"></i>
+            <strong>Windows Update</strong>
+            <small>Open Windows Update settings</small>
+        </button>
+        <button type="button" class="tool-tile" data-tool="restart" data-confirm="Restart this PC in 5 seconds?">
+            <i class="bi bi-arrow-clockwise"></i>
+            <strong>Restart PC</strong>
+            <small>shutdown /r /t 5</small>
+        </button>
+        <button type="button" class="tool-tile" data-tool="shutdown" data-confirm="Shut down this PC in 5 seconds?">
+            <i class="bi bi-power"></i>
+            <strong>Shutdown PC</strong>
+            <small>shutdown /s /t 5</small>
+        </button>
+        <button type="button" class="tool-tile" data-tool="cancel_power">
+            <i class="bi bi-x-octagon"></i>
+            <strong>Cancel Power Action</strong>
+            <small>Abort pending restart/shutdown</small>
+        </button>
+    </div>
+</section>
+
+<section class="console-panel" style="margin-top:16px;">
+    <div class="console-head">
+        <h2>Output / Console</h2>
+        <div class="console-actions">
+            <button type="button" class="ghost-btn" id="console-clear">Clear</button>
+            <button type="button" class="primary-btn" id="console-copy">Copy</button>
+            <button type="button" class="success-btn" id="console-save">Save</button>
+        </div>
+    </div>
+    <pre class="console-body" id="console-output"></pre>
+</section>
+{% endblock %}

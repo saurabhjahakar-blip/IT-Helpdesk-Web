@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="info-grid" id="info-grid">
+    <article class="info-card">
+        <div class="info-icon blue"><i class="bi bi-pc-display"></i></div>
+        <div class="info-body">
+            <span class="info-label">Computer Name</span>
+            <strong id="info-computer">{{ system.computer_name }}</strong>
+            <small>Domain: <span id="info-domain">{{ system.domain }}</span></small>
+        </div>
+    </article>
+
+    <article class="info-card">
+        <div class="info-icon green"><i class="bi bi-person"></i></div>
+        <div class="info-body">
+            <span class="info-label">Logged User</span>
+            <strong id="info-user">{{ system.logged_user }}</strong>
+            <small>Session: <span class="ok" id="info-session">Active</span></small>
+        </div>
+    </article>
+
+    <article class="info-card">
+        <div class="info-icon purple"><i class="bi bi-windows"></i></div>
+        <div class="info-body">
+            <span class="info-label">OS Version</span>
+            <strong id="info-os">{{ system.os_name }}</strong>
+            <small id="info-os-sub">{{ system.os_subtitle }}</small>
+        </div>
+    </article>
+
+    <article class="info-card">
+        <div class="info-icon cyan"><i class="bi bi-cpu"></i></div>
+        <div class="info-body">
+            <span class="info-label">CPU</span>
+            <strong id="info-cpu">{{ system.cpu_name }}</strong>
+            <small id="info-cpu-sub">{{ system.cpu_subtitle }} &middot; <span id="info-cpu-usage">{{ system.cpu_usage|int }}%</span> used</small>
+            <div class="meter"><span id="cpu-meter" style="width: {{ system.cpu_usage }}%"></span></div>
+        </div>
+    </article>
+
+    <article class="info-card">
+        <div class="info-icon lime"><i class="bi bi-memory"></i></div>
+        <div class="info-body">
+            <span class="info-label">Memory (RAM)</span>
+            <strong id="info-ram">{{ system.ram_total }} GB</strong>
+            <small id="info-ram-sub">{{ system.ram_used }} GB ({{ system.ram_percent|int }}%) Used</small>
+            <div class="meter"><span id="ram-meter" style="width: {{ system.ram_percent }}%"></span></div>
+        </div>
+    </article>
+
+    <article class="info-card">
+        <div class="info-icon orange"><i class="bi bi-device-hdd"></i></div>
+        <div class="info-body">
+            <span class="info-label">Disk Usage (C:)</span>
+            <strong id="info-disk">{{ system.disk_percent|int }}%</strong>
+            <small class="warn" id="info-disk-sub">{{ system.disk_used|int }} GB / {{ system.disk_total|int }} GB Used</small>
+            <div class="meter warn"><span id="disk-meter" style="width: {{ system.disk_percent }}%"></span></div>
+        </div>
+    </article>
+</section>
+
+<section class="quick-access">
+    <div class="section-head">
+        <h2>Quick Access</h2>
+        <button type="button" class="ghost-btn" id="customize-btn">
+            <i class="bi bi-gear"></i> Customize
+        </button>
+    </div>
+
+    <div class="qa-grid" id="qa-grid">
+        <div class="qa-card" data-category="system">
+            <div class="qa-head">
+                <div class="qa-icon blue"><i class="bi bi-pc-display"></i></div>
+                <div>
+                    <h3>System</h3>
+                    <p>Core system utilities</p>
+                </div>
+            </div>
+            <div class="qa-list">
+                <button type="button" class="qa-item" data-tool="system_info" data-search="system information">
+                    <i class="bi bi-info-circle"></i>
+                    <span>
+                        <strong>System Information</strong>
+                        <small>View detailed system info</small>
+                    </span>
+                </button>
+                <button type="button" class="qa-item" data-tool="device_manager" data-search="device manager">
+                    <i class="bi bi-usb-symbol"></i>
+                    <span>
+                        <strong>Device Manager</strong>
+                        <small>Manage hardware devices</small>
+                    </span>
+                </button>
+                <button type="button" class="qa-item" data-tool="event_viewer" data-search="event viewer">
+                    <i class="bi bi-journal-text"></i>
+                    <span>
+                        <strong>Event Viewer</strong>
+                        <small>View system event logs</small>
+                    </span>
+                </button>
+                <button type="button" class="qa-item" data-tool="task_manager" data-search="task manager">
+                    <i class="bi bi-list-task"></i>
+                    <span>
+                        <strong>Task Manager</strong>
+                        <small>Monitor running processes</small>
+                    </span>
+                </button>
+            </div>
+            <a class="view-all" href="/system">View All <i class="bi bi-arrow-right"></i></a>
+        </div>
+
+        <div class="qa-card" data-category="network">
+            <div class="qa-head">
+                <div class="qa-icon green"><i class="bi bi-wifi"></i></div>
+                <div>
+                    <h3>Network</h3>
+                    <p>Connectivity tools</p>
+                </div>
+            </div>
+            <div class="qa-list">
+                <button type="button" class="qa-item" data-tool="check_ip" data-search="check ip address">
+                    <i class="bi bi-globe"></i>
+                    <span>
+                        <strong>Check IP Address</strong>
+                        <small>View network configuration</small>
+                    </span>
+                </button>
+                <button type="button" class="qa-item" data-tool="ping_test" data-search="ping test">
+                    <i class="bi bi-activity"></i>
+                    <span>
+                        <strong>Ping Test</strong>
+                        <small>Test network connectivity</small>
+                    </span>
+                </button>
+                <button type="button" class="qa-item" data-tool="wifi_info" data-search="wifi information">
+                    <i class="bi bi-router"></i>
+                    <span>
+                        <strong>Wi-Fi Information</strong>
+                        <small>View wireless network details</small>
+                    </span>
+                </button>
+                <button type="button" class="qa-item" data-tool="dns_flush" data-search="dns flush">
+                    <i class="bi bi-arrow-repeat"></i>
+                    <span>
+                        <strong>DNS Flush</strong>
+                        <small>Clear DNS resolver cache</small>
+                    </span>
+                </button>
+            </div>
+            <a class="view-all" href="/network">View All <i class="bi bi-arrow-right"></i></a>
+        </div>
+
+        <div class="qa-card" data-category="maintenance">
+            <div class="qa-head">
+                <div class="qa-icon orange"><i class="bi bi-tools"></i></div>
+                <div>
+                    <h3>Maintenance</h3>
+                    <p>System upkeep tools</p>
+                </div>
+            </div>
+            <div class="qa-list">
+                <button type="button" class="qa-item" data-tool="disk_cleanup" data-search="disk cleanup">
+                    <i class="bi bi-trash"></i>
+                    <span>
+                        <strong>Disk Cleanup</strong>
+                        <small>Free up disk space</small>
+                    </span>
+                </button>
+                <button type="button" class="qa-item" data-tool="windows_update" data-search="windows update">
+                    <i class="bi bi-download"></i>
+                    <span>
+                        <strong>Windows Update</strong>
+                        <small>Check for system updates</small>
+                    </span>
+                </button>
+                <button type="button" class="qa-item danger" data-tool="restart" data-confirm="Restart this PC in 5 seconds?" data-search="restart pc">
+                    <i class="bi bi-arrow-clockwise"></i>
+                    <span>
+                        <strong>Restart PC</strong>
+                        <small>Restart the computer</small>
+                    </span>
+                </button>
+                <button type="button" class="qa-item danger" data-tool="shutdown" data-confirm="Shut down this PC in 5 seconds?" data-search="shutdown pc">
+                    <i class="bi bi-power"></i>
+                    <span>
+                        <strong>Shutdown PC</strong>
+                        <small>Turn off the computer</small>
+                    </span>
+                </button>
+            </div>
+            <a class="view-all" href="/maintenance">View All <i class="bi bi-arrow-right"></i></a>
+        </div>
+
+        <div class="qa-card" data-category="logs">
+            <div class="qa-head">
+                <div class="qa-icon purple"><i class="bi bi-clipboard2-pulse"></i></div>
+                <div>
+                    <h3>Logs & Diagnostics</h3>
+                    <p>Troubleshooting tools</p>
+                </div>
+            </div>
+            <div class="qa-list">
+                <button type="button" class="qa-item" data-tool="system_logs" data-search="system logs">
+                    <i class="bi bi-file-earmark-text"></i>
+                    <span>
+                        <strong>System Logs</strong>
+                        <small>View system event logs</small>
+                    </span>
+                </button>
+                <button type="button" class="qa-item" data-tool="network_logs" data-search="network logs">
+                    <i class="bi bi-hdd-network"></i>
+                    <span>
+                        <strong>Network Logs</strong>
+                        <small>View network event logs</small>
+                    </span>
+                </button>
+                <button type="button" class="qa-item" data-tool="performance_logs" data-search="performance logs">
+                    <i class="bi bi-graph-up"></i>
+                    <span>
+                        <strong>Performance Logs</strong>
+                        <small>View performance data</small>
+                    </span>
+                </button>
+                <button type="button" class="qa-item" data-tool="reliability_monitor" data-search="reliability monitor">
+                    <i class="bi bi-heart-pulse"></i>
+                    <span>
+                        <strong>Reliability Monitor</strong>
+                        <small>System stability history</small>
+                    </span>
+                </button>
+            </div>
+            <a class="view-all" href="/logs">View All <i class="bi bi-arrow-right"></i></a>
+        </div>
+    </div>
+</section>
+
+<section class="console-panel">
+    <div class="console-head">
+        <h2>Output / Console</h2>
+        <div class="console-actions">
+            <button type="button" class="ghost-btn" id="console-clear">Clear</button>
+            <button type="button" class="primary-btn" id="console-copy">Copy</button>
+            <button type="button" class="success-btn" id="console-save">Save</button>
+        </div>
+    </div>
+    <pre class="console-body" id="console-output" aria-live="polite"></pre>
+</section>
+{% endblock %}

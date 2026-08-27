@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="section-page">
+    <h2>System Tools</h2>
+    <p>Launch core Windows utilities for hardware and process diagnostics.</p>
+    <div class="tool-grid">
+        <button type="button" class="tool-tile" data-tool="system_info">
+            <i class="bi bi-info-circle"></i>
+            <strong>System Information</strong>
+            <small>msinfo32 — full hardware report</small>
+        </button>
+        <button type="button" class="tool-tile" data-tool="device_manager">
+            <i class="bi bi-usb-symbol"></i>
+            <strong>Device Manager</strong>
+            <small>Manage drivers and devices</small>
+        </button>
+        <button type="button" class="tool-tile" data-tool="event_viewer">
+            <i class="bi bi-journal-text"></i>
+            <strong>Event Viewer</strong>
+            <small>Browse Windows event logs</small>
+        </button>
+        <button type="button" class="tool-tile" data-tool="task_manager">
+            <i class="bi bi-list-task"></i>
+            <strong>Task Manager</strong>
+            <small>Processes, performance, startup</small>
+        </button>
+        <button type="button" class="tool-tile" data-tool="services">
+            <i class="bi bi-gear-wide-connected"></i>
+            <strong>Services</strong>
+            <small>Start/stop Windows services</small>
+        </button>
+        <button type="button" class="tool-tile" data-tool="cmd">
+            <i class="bi bi-terminal"></i>
+            <strong>Command Prompt</strong>
+            <small>Open elevated local shell</small>
+        </button>
+    </div>
+</section>
+
+<section class="console-panel" style="margin-top:16px;">
+    <div class="console-head">
+        <h2>Output / Console</h2>
+        <div class="console-actions">
+            <button type="button" class="ghost-btn" id="console-clear">Clear</button>
+            <button type="button" class="primary-btn" id="console-copy">Copy</button>
+            <button type="button" class="success-btn" id="console-save">Save</button>
+        </div>
+    </div>
+    <pre class="console-body" id="console-output"></pre>
+</section>
+{% endblock %}

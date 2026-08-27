@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="section-page">
+    <h2>Logs & Diagnostics</h2>
+    <p>Pull recent Windows event log entries into the console, or open Reliability Monitor.</p>
+    <div class="tool-grid">
+        <button type="button" class="tool-tile" data-tool="system_logs">
+            <i class="bi bi-file-earmark-text"></i>
+            <strong>System Logs</strong>
+            <small>Last 15 System events</small>
+        </button>
+        <button type="button" class="tool-tile" data-tool="network_logs">
+            <i class="bi bi-hdd-network"></i>
+            <strong>Network Logs</strong>
+            <small>Network profile / related events</small>
+        </button>
+        <button type="button" class="tool-tile" data-tool="performance_logs">
+            <i class="bi bi-graph-up"></i>
+            <strong>Performance Logs</strong>
+            <small>Diagnostics-Performance events</small>
+        </button>
+        <button type="button" class="tool-tile" data-tool="reliability_monitor">
+            <i class="bi bi-heart-pulse"></i>
+            <strong>Reliability Monitor</strong>
+            <small>Open perfmon /rel</small>
+        </button>
+        <button type="button" class="tool-tile" data-tool="performance_monitor">
+            <i class="bi bi-speedometer"></i>
+            <strong>Performance Monitor</strong>
+            <small>Open perfmon.exe</small>
+        </button>
+        <button type="button" class="tool-tile" data-tool="resource_monitor">
+            <i class="bi bi-cpu"></i>
+            <strong>Resource Monitor</strong>
+            <small>Open resmon.exe</small>
+        </button>
+    </div>
+</section>
+
+<section class="console-panel" style="margin-top:16px;">
+    <div class="console-head">
+        <h2>Output / Console</h2>
+        <div class="console-actions">
+            <button type="button" class="ghost-btn" id="console-clear">Clear</button>
+            <button type="button" class="primary-btn" id="console-copy">Copy</button>
+            <button type="button" class="success-btn" id="console-save">Save</button>
+        </div>
+    </div>
+    <pre class="console-body" id="console-output"></pre>
+</section>
+{% endblock %}
