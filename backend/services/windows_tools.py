@@ -3,10 +3,25 @@ import subprocess
 import time
 from typing import Callable
 
-from backend.services.system_service import run_command
+from sqlalchemy.orm import Session as DbSession
+
+from backend.db.models import Role, User
+from backend.services.audit_service import record_tool_invocation
+from backend.services.system_service import CommandResult, run_command
 
 POWER_COOLDOWN_SECONDS = 60
 _last_power_at: dict[str, float] = {}
+
+
+# All tools are currently open to every authenticated user (2026-08-28,
+# explicit user decision): restart/shutdown are normal self-service actions;
+# device_manager/services rely on Windows UAC + the AD admin-group policy to
+# block non-admin employees from actually changing anything (viewing is
+# harmless); cmd is a deliberate exception to that reasoning since it runs
+# unelevated with the caller's own permissions and isn't gated by any
+# UAC/AD prompt, but the user chose to open it anyway. Kept as a set (rather
+# than removed) so a future tool can be restricted without re-plumbing RBAC.
+TECHNICIAN_ONLY_TOOLS: set[str] = set()
 
 
 class ToolCooldownError(Exception):
@@ -25,7 +40,6 @@ def _startfile(path: str, arguments: str = "") -> None:
 
 
 def open_system_info() -> None:
-
     _popen(["msinfo32.exe"])
 
 
@@ -71,44 +85,44 @@ def open_resource_monitor() -> None:
     _popen(["resmon.exe"])
 
 
-def flush_dns() -> str:
+def flush_dns() -> CommandResult:
     return run_command(["ipconfig", "/flushdns"])
 
 
-def check_ip_address() -> str:
+def check_ip_address() -> CommandResult:
     return run_command(["ipconfig", "/all"])
 
 
-def wifi_information() -> str:
-    output = run_command(["netsh", "wlan", "show", "interfaces"])
-    if "not running" in output.lower() or "there is no wireless" in output.lower():
+def wifi_information() -> CommandResult:
+    result = run_command(["netsh", "wlan", "show", "interfaces"])
+    text = result.output.lower()
+    if "not running" in text or "there is no wireless" in text:
         profiles = run_command(["netsh", "wlan", "show", "profiles"])
-        return f"{output}\n\n{profiles}"
-    return output
+        return CommandResult(
+            command=profiles.command,
+            returncode=profiles.returncode,
+            stdout=f"{result.output}\n\n{profiles.output}",
+            duration_ms=result.duration_ms + profiles.duration_ms,
+        )
+    return result
 
 
-def ping_test(host: str = "8.8.8.8") -> str:
-    return run_command(["ping", "-n", "20", host], timeout=20)
+def ping_test(host: str = "8.8.8.8") -> CommandResult:
+    # 20 packets at ~1s each already takes ~19-20s on a healthy link, so a
+    # 20s timeout left almost no margin for slower/lossy connections.
+    return run_command(["ping", "-n", "20", host], timeout=35)
 
 
-
-def system_logs() -> str:
+def system_logs() -> CommandResult:
     return run_command(
-        [
-            "wevtutil",
-            "qe",
-            "System",
-            "/c:15",
-            "/rd:true",
-            "/f:text",
-        ],
+        ["wevtutil", "qe", "System", "/c:15", "/rd:true", "/f:text"],
         timeout=40,
     )
 
 
-def network_logs() -> str:
+def network_logs() -> CommandResult:
     # Microsoft-Windows-NetworkProfile/Operational may not exist on all builds
-    output = run_command(
+    result = run_command(
         [
             "wevtutil",
             "qe",
@@ -119,7 +133,7 @@ def network_logs() -> str:
         ],
         timeout=40,
     )
-    if output.lower().startswith("error"):
+    if not result.success:
         return run_command(
             [
                 "wevtutil",
@@ -132,11 +146,11 @@ def network_logs() -> str:
             ],
             timeout=40,
         )
-    return output
+    return result
 
 
-def performance_logs() -> str:
-    output = run_command(
+def performance_logs() -> CommandResult:
+    result = run_command(
         [
             "wevtutil",
             "qe",
@@ -147,25 +161,30 @@ def performance_logs() -> str:
         ],
         timeout=40,
     )
-    if "access is denied" in output.lower():
-        return (
-            "Access denied reading Microsoft-Windows-Diagnostics-Performance/Operational.\n"
-            "This log is restricted to Administrators on this system. "
-            "Re-run the IT Helpdesk app elevated (Run as administrator) to view it, "
-            "or use Reliability Monitor / Performance Monitor instead."
+    if "access is denied" in result.output.lower():
+        return CommandResult(
+            command=result.command,
+            returncode=result.returncode,
+            stdout=(
+                "Access denied reading Microsoft-Windows-Diagnostics-Performance/Operational.\n"
+                "This log is restricted to Administrators on this system. "
+                "Re-run the IT Helpdesk app elevated (Run as administrator) to view it, "
+                "or use Reliability Monitor / Performance Monitor instead."
+            ),
+            duration_ms=result.duration_ms,
         )
-    return output
+    return result
 
 
-def restart_pc() -> None:
-    subprocess.Popen(["shutdown", "/r", "/t", "5", "/c", "Restart requested from miniOrange IT Helpdesk"])
+def restart_pc() -> CommandResult:
+    return run_command(["shutdown", "/r", "/t", "5", "/c", "Restart requested from miniOrange IT Helpdesk"])
 
 
-def shutdown_pc() -> None:
-    subprocess.Popen(["shutdown", "/s", "/t", "5", "/c", "Shutdown requested from miniOrange IT Helpdesk"])
+def shutdown_pc() -> CommandResult:
+    return run_command(["shutdown", "/s", "/t", "5", "/c", "Shutdown requested from miniOrange IT Helpdesk"])
 
 
-def cancel_power() -> str:
+def cancel_power() -> CommandResult:
     return run_command(["shutdown", "/a"])
 
 
@@ -183,7 +202,7 @@ LAUNCH_TOOLS: dict[str, Callable[[], None]] = {
     "resource_monitor": open_resource_monitor,
 }
 
-COMMAND_TOOLS: dict[str, Callable[[], str]] = {
+COMMAND_TOOLS: dict[str, Callable[..., CommandResult]] = {
     "check_ip": check_ip_address,
     "ping_test": ping_test,
     "wifi_info": wifi_information,
@@ -194,37 +213,109 @@ COMMAND_TOOLS: dict[str, Callable[[], str]] = {
     "cancel_power": cancel_power,
 }
 
-POWER_TOOLS: dict[str, Callable[[], None]] = {
+POWER_TOOLS: dict[str, Callable[[], CommandResult]] = {
     "restart": restart_pc,
     "shutdown": shutdown_pc,
 }
 
-# Backwards-compatible alias used by older routes
-TOOLS = {**LAUNCH_TOOLS, **COMMAND_TOOLS, **POWER_TOOLS}
 
-
-def launch_tool(tool_name: str) -> dict:
+def _tool_category(tool_name: str) -> str:
     if tool_name in LAUNCH_TOOLS:
-        LAUNCH_TOOLS[tool_name]()
-        output = f"Opened {tool_name.replace('_', ' ')}."
+        return "launch"
+    if tool_name in COMMAND_TOOLS:
+        return "command"
+    if tool_name in POWER_TOOLS:
+        return "power"
+    raise ValueError(f"Unknown tool: {tool_name}")
+
+
+def launch_tool(
+    tool_name: str,
+    *,
+    user: User,
+    db: DbSession,
+    ip_address: str | None = None,
+    **kwargs,
+) -> dict:
+    category = _tool_category(tool_name)
+
+    if tool_name in TECHNICIAN_ONLY_TOOLS and user.role != Role.TECHNICIAN:
+        raise PermissionError(f"'{tool_name}' requires the technician role")
+
+    start = time.perf_counter()
+
+    if category == "launch":
+        try:
+            LAUNCH_TOOLS[tool_name]()
+            success = True
+            error_message = None
+            output = f"Opened {tool_name.replace('_', ' ')}."
+        except Exception as exc:
+            success = False
+            error_message = str(exc)
+            output = f"Failed to open {tool_name.replace('_', ' ')}: {exc}"
+        duration_ms = round((time.perf_counter() - start) * 1000)
+        record_tool_invocation(
+            db,
+            user,
+            tool_name=tool_name,
+            category=category,
+            success=success,
+            exit_code=None,
+            output=output,
+            error_message=error_message,
+            duration_ms=duration_ms,
+            ip_address=ip_address,
+        )
+        if not success:
+            raise RuntimeError(output)
         return {"status": "ok", "type": "launch", "tool": tool_name, "output": output}
 
-    if tool_name in COMMAND_TOOLS:
-        output = COMMAND_TOOLS[tool_name]()
-        return {"status": "ok", "type": "command", "tool": tool_name, "output": output}
+    if category == "command":
+        func = COMMAND_TOOLS[tool_name]
+        result = func(**kwargs) if kwargs else func()
+        duration_ms = round((time.perf_counter() - start) * 1000)
+        record_tool_invocation(
+            db,
+            user,
+            tool_name=tool_name,
+            category=category,
+            success=result.success,
+            exit_code=result.returncode,
+            output=result.output,
+            error_message=result.error,
+            duration_ms=duration_ms,
+            ip_address=ip_address,
+        )
+        return {"status": "ok", "type": "command", "tool": tool_name, "output": result.output}
 
-    if tool_name in POWER_TOOLS:
-        now = time.monotonic()
-        last = _last_power_at.get(tool_name)
-        if last is not None and (now - last) < POWER_COOLDOWN_SECONDS:
-            wait = round(POWER_COOLDOWN_SECONDS - (now - last))
-            message = f"{tool_name.title()} was just triggered. Please wait {wait}s before trying again."
-            raise ToolCooldownError(message)
+    # category == "power"
+    now = time.monotonic()
+    last = _last_power_at.get(tool_name)
+    if last is not None and (now - last) < POWER_COOLDOWN_SECONDS:
+        wait = round(POWER_COOLDOWN_SECONDS - (now - last))
+        message = f"{tool_name.title()} was just triggered. Please wait {wait}s before trying again."
+        raise ToolCooldownError(message)
 
-        _last_power_at[tool_name] = now
-        POWER_TOOLS[tool_name]()
-        action = "Restart" if tool_name == "restart" else "Shutdown"
-        output = f"{action} scheduled in 5 seconds. Run cancel_power to abort."
-        return {"status": "ok", "type": "power", "tool": tool_name, "output": output}
-
-    raise ValueError(f"Unknown tool: {tool_name}")
+    _last_power_at[tool_name] = now
+    result = POWER_TOOLS[tool_name]()
+    action = "Restart" if tool_name == "restart" else "Shutdown"
+    output = (
+        f"{action} scheduled in 5 seconds. Run cancel_power to abort."
+        if result.success
+        else result.output
+    )
+    duration_ms = round((time.perf_counter() - start) * 1000)
+    record_tool_invocation(
+        db,
+        user,
+        tool_name=tool_name,
+        category=category,
+        success=result.success,
+        exit_code=result.returncode,
+        output=output,
+        error_message=result.error,
+        duration_ms=duration_ms,
+        ip_address=ip_address,
+    )
+    return {"status": "ok" if result.success else "error", "type": "power", "tool": tool_name, "output": output}

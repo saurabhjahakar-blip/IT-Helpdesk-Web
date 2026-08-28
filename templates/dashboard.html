@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
 {% block content %}
-<section class="info-grid" id="info-grid">
+<section class="info-grid" id="info-grid" data-testid="dashboard-info-grid">
     <article class="info-card">
         <div class="info-icon blue"><i class="bi bi-pc-display"></i></div>
         <div class="info-body">
             <span class="info-label">Computer Name</span>
-            <strong id="info-computer">{{ system.computer_name }}</strong>
-            <small>Domain: <span id="info-domain">{{ system.domain }}</span></small>
+            <strong id="info-computer" data-testid="dashboard-info-computer">{{ system.computer_name }}</strong>
+            <small>Domain: <span id="info-domain" data-testid="dashboard-info-domain">{{ system.domain }}</span></small>
         </div>
     </article>
 
@@ -15,8 +15,8 @@
         <div class="info-icon green"><i class="bi bi-person"></i></div>
         <div class="info-body">
             <span class="info-label">Logged User</span>
-            <strong id="info-user">{{ system.logged_user }}</strong>
-            <small>Session: <span class="ok" id="info-session">Active</span></small>
+            <strong id="info-user" data-testid="dashboard-info-user">{{ system.logged_user }}</strong>
+            <small>Session: <span class="ok" id="info-session" data-testid="dashboard-info-session">Active</span></small>
         </div>
     </article>
 
@@ -24,8 +24,8 @@
         <div class="info-icon purple"><i class="bi bi-windows"></i></div>
         <div class="info-body">
             <span class="info-label">OS Version</span>
-            <strong id="info-os">{{ system.os_name }}</strong>
-            <small id="info-os-sub">{{ system.os_subtitle }}</small>
+            <strong id="info-os" data-testid="dashboard-info-os">{{ system.os_name }}</strong>
+            <small id="info-os-sub" data-testid="dashboard-info-os-sub">{{ system.os_subtitle }}</small>
         </div>
     </article>
 
@@ -33,9 +33,9 @@
         <div class="info-icon cyan"><i class="bi bi-cpu"></i></div>
         <div class="info-body">
             <span class="info-label">CPU</span>
-            <strong id="info-cpu">{{ system.cpu_name }}</strong>
-            <small id="info-cpu-sub">{{ system.cpu_subtitle }} &middot; <span id="info-cpu-usage">{{ system.cpu_usage|int }}%</span> used</small>
-            <div class="meter"><span id="cpu-meter" style="width: {{ system.cpu_usage }}%"></span></div>
+            <strong id="info-cpu" data-testid="dashboard-info-cpu">{{ system.cpu_name }}</strong>
+            <small id="info-cpu-sub" data-testid="dashboard-info-cpu-sub">{{ system.cpu_subtitle }} &middot; <span id="info-cpu-usage" data-testid="dashboard-info-cpu-usage">{{ system.cpu_usage|int }}%</span> used</small>
+            <div class="meter"><span id="cpu-meter" data-testid="dashboard-cpu-meter" style="width: {{ system.cpu_usage }}%"></span></div>
         </div>
     </article>
 
@@ -43,9 +43,9 @@
         <div class="info-icon lime"><i class="bi bi-memory"></i></div>
         <div class="info-body">
             <span class="info-label">Memory (RAM)</span>
-            <strong id="info-ram">{{ system.ram_total }} GB</strong>
-            <small id="info-ram-sub">{{ system.ram_used }} GB ({{ system.ram_percent|int }}%) Used</small>
-            <div class="meter"><span id="ram-meter" style="width: {{ system.ram_percent }}%"></span></div>
+            <strong id="info-ram" data-testid="dashboard-info-ram">{{ system.ram_total }} GB</strong>
+            <small id="info-ram-sub" data-testid="dashboard-info-ram-sub">{{ system.ram_used }} GB ({{ system.ram_percent|int }}%) Used</small>
+            <div class="meter"><span id="ram-meter" data-testid="dashboard-ram-meter" style="width: {{ system.ram_percent }}%"></span></div>
         </div>
     </article>
 
@@ -53,9 +53,9 @@
         <div class="info-icon orange"><i class="bi bi-device-hdd"></i></div>
         <div class="info-body">
             <span class="info-label">Disk Usage (C:)</span>
-            <strong id="info-disk">{{ system.disk_percent|int }}%</strong>
-            <small class="warn" id="info-disk-sub">{{ system.disk_used|int }} GB / {{ system.disk_total|int }} GB Used</small>
-            <div class="meter warn"><span id="disk-meter" style="width: {{ system.disk_percent }}%"></span></div>
+            <strong id="info-disk" data-testid="dashboard-info-disk">{{ system.disk_percent|int }}%</strong>
+            <small class="warn" id="info-disk-sub" data-testid="dashboard-info-disk-sub">{{ system.disk_used|int }} GB / {{ system.disk_total|int }} GB Used</small>
+            <div class="meter warn"><span id="disk-meter" data-testid="dashboard-disk-meter" style="width: {{ system.disk_percent }}%"></span></div>
         </div>
     </article>
 </section>
@@ -63,13 +63,13 @@
 <section class="quick-access">
     <div class="section-head">
         <h2>Quick Access</h2>
-        <button type="button" class="ghost-btn" id="customize-btn">
+        <button type="button" class="ghost-btn" id="customize-btn" data-testid="dashboard-customize-btn">
             <i class="bi bi-gear"></i> Customize
         </button>
     </div>
 
     <div class="qa-grid" id="qa-grid">
-        <div class="qa-card" data-category="system">
+        <div class="qa-card" data-category="system" data-testid="dashboard-qa-card-system">
             <div class="qa-head">
                 <div class="qa-icon blue"><i class="bi bi-pc-display"></i></div>
                 <div>
@@ -78,28 +78,28 @@
                 </div>
             </div>
             <div class="qa-list">
-                <button type="button" class="qa-item" data-tool="system_info" data-search="system information">
+                <button type="button" class="qa-item" data-tool="system_info" data-search="system information" data-testid="dashboard-qa-item-system_info">
                     <i class="bi bi-info-circle"></i>
                     <span>
                         <strong>System Information</strong>
                         <small>View detailed system info</small>
                     </span>
                 </button>
-                <button type="button" class="qa-item" data-tool="device_manager" data-search="device manager">
+                <button type="button" class="qa-item" data-tool="device_manager" data-search="device manager" data-testid="dashboard-qa-item-device_manager">
                     <i class="bi bi-usb-symbol"></i>
                     <span>
                         <strong>Device Manager</strong>
                         <small>Manage hardware devices</small>
                     </span>
                 </button>
-                <button type="button" class="qa-item" data-tool="event_viewer" data-search="event viewer">
+                <button type="button" class="qa-item" data-tool="event_viewer" data-search="event viewer" data-testid="dashboard-qa-item-event_viewer">
                     <i class="bi bi-journal-text"></i>
                     <span>
                         <strong>Event Viewer</strong>
                         <small>View system event logs</small>
                     </span>
                 </button>
-                <button type="button" class="qa-item" data-tool="task_manager" data-search="task manager">
+                <button type="button" class="qa-item" data-tool="task_manager" data-search="task manager" data-testid="dashboard-qa-item-task_manager">
                     <i class="bi bi-list-task"></i>
                     <span>
                         <strong>Task Manager</strong>
@@ -107,10 +107,10 @@
                     </span>
                 </button>
             </div>
-            <a class="view-all" href="/system">View All <i class="bi bi-arrow-right"></i></a>
+            <a class="view-all" href="/system" data-testid="dashboard-viewall-system">View All <i class="bi bi-arrow-right"></i></a>
         </div>
 
-        <div class="qa-card" data-category="network">
+        <div class="qa-card" data-category="network" data-testid="dashboard-qa-card-network">
             <div class="qa-head">
                 <div class="qa-icon green"><i class="bi bi-wifi"></i></div>
                 <div>
@@ -119,28 +119,28 @@
                 </div>
             </div>
             <div class="qa-list">
-                <button type="button" class="qa-item" data-tool="check_ip" data-search="check ip address">
+                <button type="button" class="qa-item" data-tool="check_ip" data-search="check ip address" data-testid="dashboard-qa-item-check_ip">
                     <i class="bi bi-globe"></i>
                     <span>
                         <strong>Check IP Address</strong>
                         <small>View network configuration</small>
                     </span>
                 </button>
-                <button type="button" class="qa-item" data-tool="ping_test" data-search="ping test">
+                <button type="button" class="qa-item" data-tool="ping_test" data-search="ping test" data-testid="dashboard-qa-item-ping_test">
                     <i class="bi bi-activity"></i>
                     <span>
                         <strong>Ping Test</strong>
                         <small>Test network connectivity</small>
                     </span>
                 </button>
-                <button type="button" class="qa-item" data-tool="wifi_info" data-search="wifi information">
+                <button type="button" class="qa-item" data-tool="wifi_info" data-search="wifi information" data-testid="dashboard-qa-item-wifi_info">
                     <i class="bi bi-router"></i>
                     <span>
                         <strong>Wi-Fi Information</strong>
                         <small>View wireless network details</small>
                     </span>
                 </button>
-                <button type="button" class="qa-item" data-tool="dns_flush" data-search="dns flush">
+                <button type="button" class="qa-item" data-tool="dns_flush" data-search="dns flush" data-testid="dashboard-qa-item-dns_flush">
                     <i class="bi bi-arrow-repeat"></i>
                     <span>
                         <strong>DNS Flush</strong>
@@ -148,10 +148,10 @@
                     </span>
                 </button>
             </div>
-            <a class="view-all" href="/network">View All <i class="bi bi-arrow-right"></i></a>
+            <a class="view-all" href="/network" data-testid="dashboard-viewall-network">View All <i class="bi bi-arrow-right"></i></a>
         </div>
 
-        <div class="qa-card" data-category="maintenance">
+        <div class="qa-card" data-category="maintenance" data-testid="dashboard-qa-card-maintenance">
             <div class="qa-head">
                 <div class="qa-icon orange"><i class="bi bi-tools"></i></div>
                 <div>
@@ -160,28 +160,28 @@
                 </div>
             </div>
             <div class="qa-list">
-                <button type="button" class="qa-item" data-tool="disk_cleanup" data-search="disk cleanup">
+                <button type="button" class="qa-item" data-tool="disk_cleanup" data-search="disk cleanup" data-testid="dashboard-qa-item-disk_cleanup">
                     <i class="bi bi-trash"></i>
                     <span>
                         <strong>Disk Cleanup</strong>
                         <small>Free up disk space</small>
                     </span>
                 </button>
-                <button type="button" class="qa-item" data-tool="windows_update" data-search="windows update">
+                <button type="button" class="qa-item" data-tool="windows_update" data-search="windows update" data-testid="dashboard-qa-item-windows_update">
                     <i class="bi bi-download"></i>
                     <span>
                         <strong>Windows Update</strong>
                         <small>Check for system updates</small>
                     </span>
                 </button>
-                <button type="button" class="qa-item danger" data-tool="restart" data-confirm="Restart this PC in 5 seconds?" data-search="restart pc">
+                <button type="button" class="qa-item danger" data-tool="restart" data-confirm="Restart this PC in 5 seconds?" data-search="restart pc" data-testid="dashboard-qa-item-restart">
                     <i class="bi bi-arrow-clockwise"></i>
                     <span>
                         <strong>Restart PC</strong>
                         <small>Restart the computer</small>
                     </span>
                 </button>
-                <button type="button" class="qa-item danger" data-tool="shutdown" data-confirm="Shut down this PC in 5 seconds?" data-search="shutdown pc">
+                <button type="button" class="qa-item danger" data-tool="shutdown" data-confirm="Shut down this PC in 5 seconds?" data-search="shutdown pc" data-testid="dashboard-qa-item-shutdown">
                     <i class="bi bi-power"></i>
                     <span>
                         <strong>Shutdown PC</strong>
@@ -189,10 +189,10 @@
                     </span>
                 </button>
             </div>
-            <a class="view-all" href="/maintenance">View All <i class="bi bi-arrow-right"></i></a>
+            <a class="view-all" href="/maintenance" data-testid="dashboard-viewall-maintenance">View All <i class="bi bi-arrow-right"></i></a>
         </div>
 
-        <div class="qa-card" data-category="logs">
+        <div class="qa-card" data-category="logs" data-testid="dashboard-qa-card-logs">
             <div class="qa-head">
                 <div class="qa-icon purple"><i class="bi bi-clipboard2-pulse"></i></div>
                 <div>
@@ -201,28 +201,28 @@
                 </div>
             </div>
             <div class="qa-list">
-                <button type="button" class="qa-item" data-tool="system_logs" data-search="system logs">
+                <button type="button" class="qa-item" data-tool="system_logs" data-search="system logs" data-testid="dashboard-qa-item-system_logs">
                     <i class="bi bi-file-earmark-text"></i>
                     <span>
                         <strong>System Logs</strong>
                         <small>View system event logs</small>
                     </span>
                 </button>
-                <button type="button" class="qa-item" data-tool="network_logs" data-search="network logs">
+                <button type="button" class="qa-item" data-tool="network_logs" data-search="network logs" data-testid="dashboard-qa-item-network_logs">
                     <i class="bi bi-hdd-network"></i>
                     <span>
                         <strong>Network Logs</strong>
                         <small>View network event logs</small>
                     </span>
                 </button>
-                <button type="button" class="qa-item" data-tool="performance_logs" data-search="performance logs">
+                <button type="button" class="qa-item" data-tool="performance_logs" data-search="performance logs" data-testid="dashboard-qa-item-performance_logs">
                     <i class="bi bi-graph-up"></i>
                     <span>
                         <strong>Performance Logs</strong>
                         <small>View performance data</small>
                     </span>
                 </button>
-                <button type="button" class="qa-item" data-tool="reliability_monitor" data-search="reliability monitor">
+                <button type="button" class="qa-item" data-tool="reliability_monitor" data-search="reliability monitor" data-testid="dashboard-qa-item-reliability_monitor">
                     <i class="bi bi-heart-pulse"></i>
                     <span>
                         <strong>Reliability Monitor</strong>
@@ -230,20 +230,20 @@
                     </span>
                 </button>
             </div>
-            <a class="view-all" href="/logs">View All <i class="bi bi-arrow-right"></i></a>
+            <a class="view-all" href="/logs" data-testid="dashboard-viewall-logs">View All <i class="bi bi-arrow-right"></i></a>
         </div>
     </div>
 </section>
 
-<section class="console-panel">
+<section class="console-panel" data-testid="dashboard-console-panel">
     <div class="console-head">
         <h2>Output / Console</h2>
         <div class="console-actions">
-            <button type="button" class="ghost-btn" id="console-clear">Clear</button>
-            <button type="button" class="primary-btn" id="console-copy">Copy</button>
-            <button type="button" class="success-btn" id="console-save">Save</button>
+            <button type="button" class="ghost-btn" id="console-clear" data-testid="dashboard-console-clear-btn">Clear</button>
+            <button type="button" class="primary-btn" id="console-copy" data-testid="dashboard-console-copy-btn">Copy</button>
+            <button type="button" class="success-btn" id="console-save" data-testid="dashboard-console-save-btn">Save</button>
         </div>
     </div>
-    <pre class="console-body" id="console-output" aria-live="polite"></pre>
+    <pre class="console-body" id="console-output" data-testid="dashboard-console-output" aria-live="polite"></pre>
 </section>
 {% endblock %}

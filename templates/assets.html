@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="section-page">
+    <h2>Asset Management</h2>
+    <p>Capture a snapshot of this machine's hardware, OS, and usage. Snapshots build a history you can use to spot trends over time.</p>
+
+    <div class="page-actions">
+        <button type="button" class="primary-btn" id="capture-snapshot-btn" data-testid="assets-capture-btn">
+            <i class="bi bi-camera"></i> Capture Snapshot
+        </button>
+    </div>
+
+    <div class="data-table-wrap">
+        <table class="data-table" id="assets-table" data-testid="assets-table">
+            <thead>
+                <tr>
+                    <th>Captured</th>
+                    <th>Computer</th>
+                    <th>OS</th>
+                    <th>CPU</th>
+                    <th>RAM</th>
+                    <th>Disk</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for snap in snapshots %}
+                <tr data-testid="assets-row-{{ snap.id }}">
+                    <td>{{ snap.captured_at.strftime("%d %b %Y %I:%M %p") }}</td>
+                    <td>{{ snap.computer_name }}</td>
+                    <td>{{ snap.os_name }} ({{ snap.os_build }})</td>
+                    <td>{{ snap.cpu_name }}</td>
+                    <td>{{ snap.ram_total_gb }} GB ({{ snap.ram_percent | round | int }}%)</td>
+                    <td>{{ snap.disk_total_gb }} GB ({{ snap.disk_percent | round | int }}%)</td>
+                </tr>
+                {% else %}
+                <tr class="empty-row" data-testid="assets-empty-row"><td colspan="6">No snapshots captured yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(() => {
+    const btn = document.getElementById("capture-snapshot-btn");
+    if (!btn) return;
+    btn.addEventListener("click", async () => {
+        btn.disabled = true;
+        try {
+            const response = await fetch("/api/assets/snapshot", { method: "POST" });
+            if (response.status === 401) { window.location.href = "/login"; return; }
+            if (!response.ok) throw new Error("Failed to capture snapshot");
+            window.moHelpdesk.toast("Snapshot captured");
+            window.location.reload();
+        } catch (error) {
+            window.moHelpdesk.toast(error.message || "Failed to capture snapshot");
+        } finally {
+            btn.disabled = false;
+        }
+    });
+})();
+</script>
+{% endblock %}

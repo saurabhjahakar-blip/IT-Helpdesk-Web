@@ -240,6 +240,10 @@ a {
     gap: 10px;
 }
 
+.topbar-actions form {
+    display: contents;
+}
+
 .icon-btn, .ghost-btn, .primary-btn, .success-btn, .profile-btn {
     border: 1px solid var(--border);
     background: var(--panel);
@@ -667,6 +671,118 @@ a {
 
 .tool-tile small {
     color: var(--muted);
+}
+
+.page-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 16px;
+    margin-bottom: 16px;
+}
+
+.data-table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    white-space: nowrap;
+}
+
+.data-table th, .data-table td {
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+.data-table thead th {
+    background: var(--bg);
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.data-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.data-table tbody tr:hover {
+    background: rgba(59, 130, 246, 0.06);
+}
+
+.data-table .ok-text {
+    color: #16a34a;
+}
+
+.data-table .err-text {
+    color: var(--danger);
+}
+
+.data-table .empty-row td {
+    color: var(--muted);
+    text-align: center;
+    padding: 24px;
+}
+
+.account-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.account-card dl {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 8px 12px;
+    margin: 0;
+}
+
+.account-card dt {
+    color: var(--muted);
+}
+
+.account-card dd {
+    margin: 0;
+}
+
+.settings-form {
+    max-width: 360px;
+}
+
+.form-field {
+    margin-bottom: 14px;
+}
+
+.form-field label {
+    display: block;
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-bottom: 6px;
+}
+
+.form-field input {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+}
+
+.form-hint {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: -8px;
+    margin-bottom: 14px;
 }
 
 @media (max-width: 1400px) {

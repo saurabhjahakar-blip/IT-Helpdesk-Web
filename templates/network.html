@@ -5,22 +5,22 @@
     <h2>Network Tools</h2>
     <p>Run connectivity checks and inspect local network configuration. Output appears in the console below.</p>
     <div class="tool-grid">
-        <button type="button" class="tool-tile" data-tool="check_ip">
+        <button type="button" class="tool-tile" data-tool="check_ip" data-testid="network-tool-check_ip">
             <i class="bi bi-globe"></i>
             <strong>Check IP Address</strong>
             <small>ipconfig /all</small>
         </button>
-        <button type="button" class="tool-tile" data-tool="ping_test">
+        <button type="button" class="tool-tile" data-tool="ping_test" data-testid="network-tool-ping_test">
             <i class="bi bi-activity"></i>
             <strong>Ping Test</strong>
             <small>Ping 8.8.8.8 (20 packets)</small>
         </button>
-        <button type="button" class="tool-tile" data-tool="wifi_info">
+        <button type="button" class="tool-tile" data-tool="wifi_info" data-testid="network-tool-wifi_info">
             <i class="bi bi-router"></i>
             <strong>Wi-Fi Information</strong>
             <small>netsh wlan show interfaces</small>
         </button>
-        <button type="button" class="tool-tile" data-tool="dns_flush">
+        <button type="button" class="tool-tile" data-tool="dns_flush" data-testid="network-tool-dns_flush">
             <i class="bi bi-arrow-repeat"></i>
             <strong>DNS Flush</strong>
             <small>ipconfig /flushdns</small>
@@ -28,15 +28,15 @@
     </div>
 </section>
 
-<section class="console-panel" style="margin-top:16px;">
+<section class="console-panel" style="margin-top:16px;" data-testid="network-console-panel">
     <div class="console-head">
         <h2>Output / Console</h2>
         <div class="console-actions">
-            <button type="button" class="ghost-btn" id="console-clear">Clear</button>
-            <button type="button" class="primary-btn" id="console-copy">Copy</button>
-            <button type="button" class="success-btn" id="console-save">Save</button>
+            <button type="button" class="ghost-btn" id="console-clear" data-testid="network-console-clear-btn">Clear</button>
+            <button type="button" class="primary-btn" id="console-copy" data-testid="network-console-copy-btn">Copy</button>
+            <button type="button" class="success-btn" id="console-save" data-testid="network-console-save-btn">Save</button>
         </div>
     </div>
-    <pre class="console-body" id="console-output"></pre>
+    <pre class="console-body" id="console-output" data-testid="network-console-output"></pre>
 </section>
 {% endblock %}

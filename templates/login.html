@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} — miniOrange IT Helpdesk Tool</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
+    <style>
+        .login-shell {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg);
+        }
+        .login-card {
+            width: 100%;
+            max-width: 380px;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            box-shadow: var(--shadow);
+            padding: 32px;
+        }
+        .login-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+        .login-brand strong {
+            display: block;
+            color: var(--text);
+        }
+        .login-brand span {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+        .login-card h2 {
+            margin: 0 0 18px;
+            font-size: 1.2rem;
+            color: var(--text);
+        }
+        .login-field {
+            margin-bottom: 14px;
+        }
+        .login-field label {
+            display: block;
+            font-size: 0.82rem;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+        .login-field input {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text);
+        }
+        .login-error {
+            background: rgba(239, 68, 68, 0.12);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 0.85rem;
+            margin-bottom: 14px;
+        }
+        .login-submit {
+            width: 100%;
+            justify-content: center;
+            border: 1px solid var(--blue);
+            border-radius: 8px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div class="login-shell">
+    <div class="login-card">
+        <div class="login-brand">
+            <svg viewBox="0 0 32 32" width="28" height="28">
+                <circle cx="16" cy="16" r="14" fill="#f97316"/>
+                <circle cx="16" cy="16" r="6" fill="#fff"/>
+                <circle cx="16" cy="16" r="2.5" fill="#f97316"/>
+            </svg>
+            <div>
+                <strong>miniOrange</strong>
+                <span>IT Helpdesk Tool</span>
+            </div>
+        </div>
+        <h2>Sign in</h2>
+        {% if error %}
+        <div class="login-error" data-testid="login-error-banner">{{ error }}</div>
+        {% endif %}
+        <form method="post" action="/login" data-testid="login-form">
+            <input type="hidden" name="next" value="{{ next }}" data-testid="login-next-input">
+            <div class="login-field">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" data-testid="login-email-input" required autofocus autocomplete="username">
+            </div>
+            <div class="login-field">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" data-testid="login-password-input" required autocomplete="current-password">
+            </div>
+            <button type="submit" class="primary-btn login-submit" data-testid="login-submit-btn">Sign in</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>

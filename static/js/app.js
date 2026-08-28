@@ -80,6 +80,10 @@
 
         try {
             const response = await fetch(`/api/system/tools/${tool}`, { method: "POST" });
+            if (response.status === 401) {
+                window.location.href = "/login";
+                return;
+            }
             const data = await response.json().catch(() => ({}));
             if (!response.ok) {
                 throw new Error(data.detail || "Tool failed");
@@ -204,7 +208,6 @@
             "info-ram-sub": `${data.ram_used} GB (${Math.round(data.ram_percent)}%) Used`,
             "info-disk": `${Math.round(data.disk_percent)}%`,
             "info-disk-sub": `${Math.round(data.disk_used)} GB / ${Math.round(data.disk_total)} GB Used`,
-            "profile-name": data.logged_user,
         };
         Object.entries(map).forEach(([id, value]) => {
             const el = document.getElementById(id);
@@ -226,6 +229,10 @@
     async function refreshSystem(seedConsole = false) {
         try {
             const response = await fetch("/api/system/info");
+            if (response.status === 401) {
+                window.location.href = "/login";
+                return;
+            }
             if (!response.ok) throw new Error("Failed to refresh system info");
             const data = await response.json();
             updateInfoCards(data);
