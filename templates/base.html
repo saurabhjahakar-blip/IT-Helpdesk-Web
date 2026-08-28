@@ -24,9 +24,9 @@
             </div>
         </div>
 
-        <nav class="sidebar-nav">
+        <nav class="sidebar-nav" data-testid="sidebar-nav">
             {% for item in nav_items %}
-            <a href="{{ item.path }}" class="nav-item {% if active_nav == item.id %}active{% endif %}">
+            <a href="{{ item.path }}" class="nav-item {% if active_nav == item.id %}active{% endif %}" data-testid="nav-link-{{ item.id }}">
                 <i class="bi {{ item.icon }}"></i>
                 <span>{{ item.label }}</span>
             </a>
@@ -34,13 +34,13 @@
         </nav>
 
         <div class="sidebar-footer">
-            <div class="health-card" id="sidebar-health" data-level="{{ system.health.level }}">
+            <div class="health-card" id="sidebar-health" data-testid="sidebar-health-card" data-level="{{ system.health.level }}">
                 <div class="health-title">System Health</div>
                 <div class="health-status">
                     <i class="bi bi-check-circle-fill" id="health-icon"></i>
-                    <strong id="health-status">{{ system.health.status }}</strong>
+                    <strong id="health-status" data-testid="sidebar-health-status">{{ system.health.status }}</strong>
                 </div>
-                <p id="health-message">{{ system.health.message }}</p>
+                <p id="health-message" data-testid="sidebar-health-message">{{ system.health.message }}</p>
             </div>
             <div class="version">Version 1.0.0</div>
         </div>
@@ -55,22 +55,27 @@
 
             <div class="search-wrap">
                 <i class="bi bi-search"></i>
-                <input type="search" id="tool-search" placeholder="Search tools..." autocomplete="off">
+                <input type="search" id="tool-search" data-testid="topbar-search-input" placeholder="Search tools..." autocomplete="off">
             </div>
 
             <div class="topbar-actions">
-                <button type="button" class="icon-btn" id="theme-toggle" title="Toggle theme" aria-label="Toggle theme">
+                <button type="button" class="icon-btn" id="theme-toggle" data-testid="topbar-theme-toggle" title="Toggle theme" aria-label="Toggle theme">
                     <i class="bi bi-moon-stars" id="theme-icon"></i>
                 </button>
-                <button type="button" class="icon-btn notify-btn" title="Notifications" aria-label="Notifications">
+                <button type="button" class="icon-btn notify-btn" data-testid="topbar-notify-btn" title="Notifications" aria-label="Notifications">
                     <i class="bi bi-bell"></i>
                     <span class="badge">3</span>
                 </button>
-                <button type="button" class="profile-btn" title="Profile">
+                <button type="button" class="profile-btn" data-testid="topbar-profile-btn" title="{{ current_user.email }} ({{ current_user.role.value }})">
                     <i class="bi bi-person-circle"></i>
-                    <span id="profile-name">{{ system.logged_user }}</span>
+                    <span id="profile-name" data-testid="topbar-profile-name">{{ current_user.display_name }}</span>
                     <i class="bi bi-chevron-down"></i>
                 </button>
+                <form method="post" action="/logout">
+                    <button type="submit" class="icon-btn" data-testid="topbar-logout-btn" title="Sign out" aria-label="Sign out">
+                        <i class="bi bi-box-arrow-right"></i>
+                    </button>
+                </form>
             </div>
         </header>
 
@@ -81,12 +86,12 @@
         <footer class="status-bar">
             <div class="status-item">
                 <i class="bi bi-clock"></i>
-                <span>Last Updated: <strong id="last-updated">{{ system.last_updated }}</strong></span>
+                <span>Last Updated: <strong id="last-updated" data-testid="statusbar-last-updated">{{ system.last_updated }}</strong></span>
             </div>
             <div class="status-item">
                 <i class="bi bi-reception-4"></i>
                 <span>Network:
-                    <strong id="network-status" class="{% if system.network_connected %}ok{% else %}bad{% endif %}">
+                    <strong id="network-status" data-testid="statusbar-network-status" class="{% if system.network_connected %}ok{% else %}bad{% endif %}">
                         {% if system.network_connected %}Connected{% else %}Disconnected{% endif %}
                     </strong>
                 </span>
@@ -94,7 +99,7 @@
             <div class="status-item">
                 <i class="bi bi-globe2"></i>
                 <span>Internet:
-                    <strong id="internet-status" class="{% if system.internet_connected %}ok{% else %}bad{% endif %}">
+                    <strong id="internet-status" data-testid="statusbar-internet-status" class="{% if system.internet_connected %}ok{% else %}bad{% endif %}">
                         {% if system.internet_connected %}Connected{% else %}Disconnected{% endif %}
                     </strong>
                 </span>
@@ -104,7 +109,7 @@
     </div>
 </div>
 
-<div class="toast-host" id="toast-host" aria-live="polite"></div>
+<div class="toast-host" id="toast-host" data-testid="toast-host" aria-live="polite"></div>
 
 <script src="{{ url_for('static', path='js/app.js') }}"></script>
 {% block scripts %}{% endblock %}

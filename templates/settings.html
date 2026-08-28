@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="section-page">
+    <h2>Account</h2>
+    <div class="account-card" data-testid="settings-account-card">
+        <dl>
+            <dt>Email</dt>
+            <dd data-testid="settings-account-email">{{ current_user.email }}</dd>
+            <dt>Display name</dt>
+            <dd data-testid="settings-account-display-name">{{ current_user.display_name }}</dd>
+            <dt>Role</dt>
+            <dd data-testid="settings-account-role">{{ current_user.role.value }}</dd>
+            <dt>Member since</dt>
+            <dd data-testid="settings-account-created-at">{{ current_user.created_at.strftime("%d %b %Y") }}</dd>
+            <dt>Last login</dt>
+            <dd data-testid="settings-account-last-login">{{ current_user.last_login_at.strftime("%d %b %Y %I:%M %p") if current_user.last_login_at else "This session" }}</dd>
+        </dl>
+    </div>
+
+    <h2>Change Password</h2>
+    <p>Changing your password signs out every other session on this account.</p>
+    <form class="settings-form" id="change-password-form" data-testid="settings-password-form">
+        <div class="form-field">
+            <label for="current_password">Current password</label>
+            <input type="password" id="current_password" name="current_password" data-testid="settings-current-password-input" required autocomplete="current-password">
+        </div>
+        <div class="form-field">
+            <label for="new_password">New password</label>
+            <input type="password" id="new_password" name="new_password" data-testid="settings-new-password-input" required minlength="8" autocomplete="new-password">
+        </div>
+        <div class="form-hint">At least 8 characters.</div>
+        <div class="form-field">
+            <label for="confirm_password">Confirm new password</label>
+            <input type="password" id="confirm_password" name="confirm_password" data-testid="settings-confirm-password-input" required minlength="8" autocomplete="new-password">
+        </div>
+        <button type="submit" class="primary-btn" data-testid="settings-update-password-btn">Update Password</button>
+    </form>
+
+    <p>Use the theme toggle in the top bar to switch light/dark mode. That preference is saved in this browser.</p>
+</section>
+
+{% if activity is not none %}
+<section class="section-page" style="margin-top:16px;">
+    <h2>Recent Activity (all users)</h2>
+    <p>Technician-only view of the last {{ activity | length }} tool invocations across the app.</p>
+    <div class="data-table-wrap">
+        <table class="data-table" data-testid="settings-activity-table">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>User</th>
+                    <th>Tool</th>
+                    <th>Category</th>
+                    <th>Result</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in activity %}
+                <tr data-testid="settings-activity-row-{{ row.id }}">
+                    <td>{{ row.created_at.strftime("%d %b %Y %I:%M:%S %p") }}</td>
+                    <td>{{ row.username_snapshot }}</td>
+                    <td>{{ row.tool_name }}</td>
+                    <td>{{ row.category }}</td>
+                    <td>
+                        {% if row.success %}<span class="ok-text">Success</span>{% else %}<span class="err-text">Failed</span>{% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr class="empty-row" data-testid="settings-activity-empty-row"><td colspan="5">No activity recorded yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+(() => {
+    const form = document.getElementById("change-password-form");
+    if (!form) return;
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const payload = {
+            current_password: form.current_password.value,
+            new_password: form.new_password.value,
+            confirm_password: form.confirm_password.value,
+        };
+        try {
+            const response = await fetch("/api/account/change-password", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            });
+            if (response.status === 401) {
+                window.location.href = "/login";
+                return;
+            }
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                throw new Error(data.detail || "Failed to update password");
+            }
+            window.moHelpdesk.toast("Password updated");
+            form.reset();
+        } catch (error) {
+            window.moHelpdesk.toast(error.message || "Failed to update password");
+        }
+    });
+})();
+</script>
+{% endblock %}

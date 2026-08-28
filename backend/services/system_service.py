@@ -2,6 +2,8 @@ import os
 import platform
 import socket
 import subprocess
+import time
+from dataclasses import dataclass
 from datetime import datetime
 
 import psutil
@@ -168,6 +170,7 @@ def get_system_info() -> dict:
         "session_active": True,
         "os_name": os_info["os_name"],
         "os_subtitle": os_info["os_subtitle"],
+        "os_build": os_info["os_build"],
         "cpu_name": cpu_name,
         "cpu_subtitle": cpu_subtitle or f"{psutil.cpu_count(logical=False) or psutil.cpu_count()} cores",
         "cpu_usage": psutil.cpu_percent(interval=0.2),
@@ -185,7 +188,32 @@ def get_system_info() -> dict:
     }
 
 
-def run_command(command: list[str], timeout: int = 30) -> str:
+@dataclass(slots=True)
+class CommandResult:
+    command: list[str]
+    returncode: int | None
+    stdout: str = ""
+    stderr: str = ""
+    duration_ms: int = 0
+    timed_out: bool = False
+    error: str | None = None
+
+    @property
+    def success(self) -> bool:
+        return self.error is None and not self.timed_out and self.returncode == 0
+
+    @property
+    def output(self) -> str:
+        if self.error is not None:
+            return f"Error: {self.error}"
+        if self.timed_out:
+            return "Command timed out."
+        text = (self.stdout or "") + (self.stderr or "")
+        return text.strip() or "Command completed with no output."
+
+
+def run_command(command: list[str], timeout: int = 30) -> CommandResult:
+    start = time.monotonic()
     try:
         result = subprocess.run(
             command,
@@ -195,9 +223,17 @@ def run_command(command: list[str], timeout: int = 30) -> str:
             shell=False,
             creationflags=subprocess.CREATE_NO_WINDOW if hasattr(subprocess, "CREATE_NO_WINDOW") else 0,
         )
-        output = (result.stdout or "") + (result.stderr or "")
-        return output.strip() or "Command completed with no output."
+        duration_ms = round((time.monotonic() - start) * 1000)
+        return CommandResult(
+            command=command,
+            returncode=result.returncode,
+            stdout=result.stdout or "",
+            stderr=result.stderr or "",
+            duration_ms=duration_ms,
+        )
     except subprocess.TimeoutExpired:
-        return "Command timed out."
+        duration_ms = round((time.monotonic() - start) * 1000)
+        return CommandResult(command=command, returncode=None, duration_ms=duration_ms, timed_out=True)
     except Exception as exc:
-        return f"Error: {exc}"
+        duration_ms = round((time.monotonic() - start) * 1000)
+        return CommandResult(command=command, returncode=None, duration_ms=duration_ms, error=str(exc))

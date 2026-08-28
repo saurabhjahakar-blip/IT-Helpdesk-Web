@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="section-page">
+    <h2>Reports</h2>
+    <p>Generate a self-contained support report with your current system info and recent activity, then download it to share with IT.</p>
+
+    <div class="page-actions">
+        <button type="button" class="primary-btn" id="generate-report-btn" data-testid="reports-generate-btn">
+            <i class="bi bi-file-earmark-plus"></i> Generate Report
+        </button>
+    </div>
+
+    <div class="data-table-wrap">
+        <table class="data-table" id="reports-table" data-testid="reports-table">
+            <thead>
+                <tr>
+                    <th>Generated</th>
+                    <th>Computer</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for report in reports %}
+                <tr data-testid="reports-row-{{ report.id }}">
+                    <td>{{ report.created_at.strftime("%d %b %Y %I:%M %p") }}</td>
+                    <td>{{ report.computer_name }}</td>
+                    <td><a class="view-all" href="/api/reports/{{ report.id }}/download" data-testid="reports-download-{{ report.id }}">Download</a></td>
+                </tr>
+                {% else %}
+                <tr class="empty-row" data-testid="reports-empty-row"><td colspan="3">No reports generated yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(() => {
+    const btn = document.getElementById("generate-report-btn");
+    if (!btn) return;
+    btn.addEventListener("click", async () => {
+        btn.disabled = true;
+        try {
+            const response = await fetch("/api/reports/generate", { method: "POST" });
+            if (response.status === 401) { window.location.href = "/login"; return; }
+            if (!response.ok) throw new Error("Failed to generate report");
+            window.moHelpdesk.toast("Report generated");
+            window.location.reload();
+        } catch (error) {
+            window.moHelpdesk.toast(error.message || "Failed to generate report");
+        } finally {
+            btn.disabled = false;
+        }
+    });
+})();
+</script>
+{% endblock %}
