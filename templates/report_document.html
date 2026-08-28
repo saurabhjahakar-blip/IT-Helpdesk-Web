@@ -12,7 +12,7 @@
             padding: 32px;
         }
         .doc {
-            max-width: 760px;
+            max-width: 780px;
             margin: 0 auto;
             background: #ffffff;
             border: 1px solid #e2e8f0;
@@ -26,7 +26,17 @@
         .meta {
             color: #64748b;
             font-size: 0.85rem;
-            margin-bottom: 24px;
+            margin-bottom: 8px;
+        }
+        .auto-note {
+            display: inline-block;
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #bfdbfe;
+            border-radius: 999px;
+            padding: 3px 10px;
+            font-size: 0.72rem;
+            margin-bottom: 20px;
         }
         h2 {
             font-size: 1rem;
@@ -49,11 +59,51 @@
             color: #64748b;
             font-weight: 600;
         }
+        ul.plain {
+            margin: 8px 0 0;
+            padding-left: 20px;
+            font-size: 0.85rem;
+        }
+        ul.plain li {
+            margin-bottom: 4px;
+        }
         .success {
             color: #16a34a;
         }
         .failed {
             color: #ef4444;
+        }
+        .status-badge {
+            display: inline-block;
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .status-resolved {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .status-monitoring {
+            background: #fef9c3;
+            color: #854d0e;
+        }
+        .status-escalate {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .ticket-callout {
+            margin-top: 12px;
+            padding: 14px 16px;
+            border-radius: 10px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            font-size: 0.85rem;
+        }
+        .ticket-callout a {
+            color: #1d4ed8;
+            font-weight: 600;
+            text-decoration: none;
         }
         .footer {
             margin-top: 28px;
@@ -64,26 +114,49 @@
 </head>
 <body>
 <div class="doc">
-    <h1>miniOrange IT Helpdesk — Support Report</h1>
+    <h1>miniOrange IT Helpdesk — Automated Support Report</h1>
     <div class="meta">
         Generated for {{ generated_for.display_name }} ({{ generated_for.email }})
-        on {{ report.created_at.strftime("%d %b %Y %I:%M %p") }} UTC
+        on {{ report.created_at.strftime("%d %b %Y %I:%M %p") }}
     </div>
+    <div class="auto-note">Auto-generated from live diagnostics and recent tool activity — no manual input</div>
 
-    <h2>System</h2>
+    <h2>1. Report Information</h2>
     <table>
-        <tr><th>Computer</th><td>{{ system.computer_name }} ({{ system.domain }})</td></tr>
-        <tr><th>Logged-in user</th><td>{{ system.logged_user }}</td></tr>
-        <tr><th>OS</th><td>{{ system.os_name }} — {{ system.os_subtitle }}</td></tr>
-        <tr><th>CPU</th><td>{{ system.cpu_name }} {{ system.cpu_subtitle }}</td></tr>
-        <tr><th>RAM</th><td>{{ system.ram_used }} GB / {{ system.ram_total }} GB ({{ system.ram_percent | round | int }}%)</td></tr>
-        <tr><th>Disk (C:)</th><td>{{ system.disk_used }} GB / {{ system.disk_total }} GB ({{ system.disk_percent | round | int }}%)</td></tr>
-        <tr><th>Network</th><td>{{ "Connected" if system.network_connected else "Disconnected" }}</td></tr>
-        <tr><th>Internet</th><td>{{ "Connected" if system.internet_connected else "Disconnected" }}</td></tr>
-        <tr><th>Health</th><td>{{ system.health.status }} — {{ system.health.message }}</td></tr>
+        <tr><th>Report ID</th><td>#{{ report.id }}</td></tr>
+        <tr><th>Generated At</th><td>{{ report.created_at.strftime("%d %b %Y %I:%M %p") }}</td></tr>
+        <tr><th>Generated For</th><td>{{ generated_for.display_name }} ({{ generated_for.email }}, {{ generated_for.role.value }})</td></tr>
+        <tr><th>Report Type</th><td>Automated Diagnostic Report</td></tr>
     </table>
 
-    <h2>Recent Activity</h2>
+    <h2>2. Device Information</h2>
+    <table>
+        <tr><th>Computer</th><td>{{ system.computer_name }} ({{ system.domain }})</td></tr>
+        <tr><th>Logged-in User</th><td>{{ system.logged_user }}</td></tr>
+        <tr><th>Operating System</th><td>{{ system.os_name }} — {{ system.os_subtitle }}</td></tr>
+        <tr><th>CPU</th><td>{{ system.cpu_name }} {{ system.cpu_subtitle }}</td></tr>
+        <tr><th>RAM (Total)</th><td>{{ system.ram_total }} GB</td></tr>
+        <tr><th>Disk (Total, C:)</th><td>{{ system.disk_total }} GB</td></tr>
+    </table>
+
+    <h2>3. Issue Details</h2>
+    <ul class="plain">
+        {% for line in sections.issue_details %}
+        <li>{{ line }}</li>
+        {% endfor %}
+    </ul>
+
+    <h2>4. Diagnostics</h2>
+    <table>
+        <tr><th>CPU Usage</th><td>{{ system.cpu_usage | round | int }}%</td></tr>
+        <tr><th>RAM Usage</th><td>{{ system.ram_used }} GB / {{ system.ram_total }} GB ({{ system.ram_percent | round | int }}%)</td></tr>
+        <tr><th>Disk Usage (C:)</th><td>{{ system.disk_used }} GB / {{ system.disk_total }} GB ({{ system.disk_percent | round | int }}%)</td></tr>
+        <tr><th>Network</th><td>{{ "Connected" if system.network_connected else "Disconnected" }}</td></tr>
+        <tr><th>Internet</th><td>{{ "Connected" if system.internet_connected else "Disconnected" }}</td></tr>
+        <tr><th>Health (at generation)</th><td>{{ system.health.status }} — {{ system.health.message }}</td></tr>
+    </table>
+
+    <h2>5. Troubleshooting Performed</h2>
     {% if audit_summary %}
     <table>
         <tr><th>When</th><th>Tool</th><th>Result</th></tr>
@@ -91,15 +164,53 @@
         <tr>
             <td>{{ entry.created_at }}</td>
             <td>{{ entry.tool_name }} ({{ entry.category }})</td>
-            <td class="{{ 'success' if entry.success else 'failed' }}">{{ "Success" if entry.success else "Failed" }}</td>
+            <td class="{{ 'success' if entry.success else 'failed' }}">
+                {{ "Success" if entry.success else "Failed" }}{% if not entry.success and entry.error_message %} — {{ entry.error_message }}{% endif %}
+            </td>
         </tr>
         {% endfor %}
     </table>
     {% else %}
-    <p>No recent tool activity for this user.</p>
+    <p>No recent tool activity recorded for this user.</p>
     {% endif %}
 
-    <div class="footer">Report #{{ report.id }} — generated by miniOrange IT Helpdesk Tool.</div>
+    <h2>6. Findings</h2>
+    <ul class="plain">
+        {% for line in sections.findings %}
+        <li>{{ line }}</li>
+        {% endfor %}
+    </ul>
+
+    <h2>7. Root Cause</h2>
+    <p>{{ sections.root_cause }}</p>
+
+    <h2>8. Resolution</h2>
+    <p>{{ sections.resolution }}</p>
+
+    <h2>9. Validation</h2>
+    <ul class="plain">
+        {% for line in sections.validation %}
+        <li>{{ line }}</li>
+        {% endfor %}
+    </ul>
+
+    <h2>10. Final Status</h2>
+    <span class="status-badge {% if 'Resolved' in sections.final_status %}status-resolved{% elif 'Monitoring' in sections.final_status %}status-monitoring{% else %}status-escalate{% endif %}">
+        {{ sections.final_status }}
+    </span>
+
+    {% if ticketing_url %}
+    <div class="ticket-callout">
+        {% if 'Escalation' in sections.final_status %}
+        This report indicates the issue may still need attention.
+        {% else %}
+        Still need help with this?
+        {% endif %}
+        <a href="{{ ticketing_url }}">Raise a ticket with IT →</a>
+    </div>
+    {% endif %}
+
+    <div class="footer">Report #{{ report.id }} — generated automatically by miniOrange IT Helpdesk Tool. Root Cause/Findings/Final Status are rule-based inferences from collected diagnostics, not a certified technician assessment.</div>
 </div>
 </body>
 </html>

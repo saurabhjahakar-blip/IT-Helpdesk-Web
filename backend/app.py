@@ -2,12 +2,14 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from sqlalchemy import text
 from sqlalchemy.orm import Session as DbSession
 
 from backend.auth.dependencies import AuthRedirect, auth_redirect_handler, require_page_user
+from backend.config import get_settings
 from backend.db.models import AuditLog, Role, User
 from backend.db.session import get_db
 from backend.logging_config import configure_logging
@@ -31,6 +33,30 @@ async def _lifespan(app: FastAPI):
 
 app = FastAPI(title="miniOrange IT Helpdesk Tool", lifespan=_lifespan)
 app.add_exception_handler(AuthRedirect, auth_redirect_handler)
+
+
+@app.middleware("http")
+async def _security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "same-origin"
+    if get_settings().secure_cookies:
+        response.headers["Strict-Transport-Security"] = "max-age=63072000; includeSubDomains"
+    return response
+
+
+@app.get("/healthz")
+def healthz(db: DbSession = Depends(get_db)):
+    try:
+        db.execute(text("SELECT 1"))
+        db_ok = True
+    except Exception:
+        db_ok = False
+    status_code = 200 if db_ok else 503
+    return JSONResponse({"status": "ok" if db_ok else "degraded", "db": db_ok}, status_code=status_code)
+
+
 app.include_router(auth_router, tags=["Auth"])
 app.include_router(system_router, prefix="/api/system", tags=["System"])
 app.include_router(reports_router, prefix="/api/reports", tags=["Reports"])
@@ -54,6 +80,13 @@ NAV_ITEMS = [
     {"id": "assets", "label": "Asset Management", "icon": "bi-box-seam", "path": "/assets"},
     {"id": "settings", "label": "Settings", "icon": "bi-gear", "path": "/settings"},
     {"id": "about", "label": "About", "icon": "bi-info-circle", "path": "/about"},
+    {
+        "id": "raise_ticket",
+        "label": "Raise a Ticket",
+        "icon": "bi-life-preserver",
+        "path": get_settings().ticketing_url,
+        "external": True,
+    },
 ]
 
 
@@ -144,6 +177,7 @@ async def reports_page(
         "Generate a support report",
         user,
         reports=list_reports(db, user),
+        ticketing_url=get_settings().ticketing_url,
     )
 
 

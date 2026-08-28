@@ -9,6 +9,11 @@
         <button type="button" class="primary-btn" id="generate-report-btn" data-testid="reports-generate-btn">
             <i class="bi bi-file-earmark-plus"></i> Generate Report
         </button>
+        {% if ticketing_url %}
+        <a class="ghost-btn" href="{{ ticketing_url }}" target="_blank" rel="noopener" data-testid="reports-raise-ticket-link">
+            <i class="bi bi-life-preserver"></i> Raise a Ticket
+        </a>
+        {% endif %}
     </div>
 
     <div class="data-table-wrap">
@@ -44,7 +49,7 @@
     btn.addEventListener("click", async () => {
         btn.disabled = true;
         try {
-            const response = await fetch("/api/reports/generate", { method: "POST" });
+            const response = await fetch("/api/reports/generate", { method: "POST", headers: window.moHelpdesk.csrfHeaders() });
             if (response.status === 401) { window.location.href = "/login"; return; }
             if (!response.ok) throw new Error("Failed to generate report");
             window.moHelpdesk.toast("Report generated");

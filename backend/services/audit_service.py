@@ -57,3 +57,48 @@ def record_tool_invocation(
         db.commit()
     except Exception:
         db.rollback()
+
+
+def record_auth_event(
+    db: DbSession,
+    *,
+    user_id: int | None,
+    username_snapshot: str,
+    event: str,
+    success: bool,
+    ip_address: str | None,
+) -> None:
+    """Login/logout/lockout events — a security-review gap `record_tool_invocation`
+    doesn't cover, since it requires an already-authenticated User. `user_id` is
+    None for a failed attempt against an email that doesn't match any account."""
+    fields = {
+        "user_id": user_id,
+        "username": username_snapshot,
+        "tool_name": event,
+        "category": "auth",
+        "success": success,
+        "exit_code": None,
+        "duration_ms": 0,
+        "ip_address": ip_address,
+        "error_message": None,
+    }
+    _audit_logger.info("", extra={"audit_fields": fields})
+
+    try:
+        db.add(
+            AuditLog(
+                user_id=user_id,
+                username_snapshot=username_snapshot,
+                tool_name=event,
+                category="auth",
+                success=success,
+                exit_code=None,
+                output_excerpt=None,
+                error_message=None,
+                duration_ms=0,
+                ip_address=ip_address,
+            )
+        )
+        db.commit()
+    except Exception:
+        db.rollback()

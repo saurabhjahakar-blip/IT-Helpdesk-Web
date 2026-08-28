@@ -19,6 +19,7 @@
     </div>
 
     <h2>Change Password</h2>
+    {% if current_user.auth_source == "local" %}
     <p>Changing your password signs out every other session on this account.</p>
     <form class="settings-form" id="change-password-form" data-testid="settings-password-form">
         <div class="form-field">
@@ -36,6 +37,9 @@
         </div>
         <button type="submit" class="primary-btn" data-testid="settings-update-password-btn">Update Password</button>
     </form>
+    {% else %}
+    <p data-testid="settings-password-managed-note">Your password is managed by your organization's directory (Active Directory) and can't be changed here.</p>
+    {% endif %}
 
     <p>Use the theme toggle in the top bar to switch light/dark mode. That preference is saved in this browser.</p>
 </section>
@@ -91,7 +95,7 @@
         try {
             const response = await fetch("/api/account/change-password", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json", ...window.moHelpdesk.csrfHeaders() },
                 body: JSON.stringify(payload),
             });
             if (response.status === 401) {

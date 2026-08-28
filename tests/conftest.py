@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from backend.app import app
-from backend.auth.dependencies import require_api_user, require_page_user
+from backend.auth.dependencies import require_api_user, require_csrf, require_page_user
 from backend.db.base import Base
 from backend.db.models import Role, User
 from backend.db.session import get_db
@@ -66,9 +66,11 @@ def client(db_session):
 def _authed(client_fixture, user):
     app.dependency_overrides[require_api_user] = lambda: user
     app.dependency_overrides[require_page_user] = lambda: user
+    app.dependency_overrides[require_csrf] = lambda: None
     yield client_fixture
     app.dependency_overrides.pop(require_api_user, None)
     app.dependency_overrides.pop(require_page_user, None)
+    app.dependency_overrides.pop(require_csrf, None)
 
 
 @pytest.fixture()

@@ -7,6 +7,15 @@
         return new Date().toLocaleTimeString("en-GB", { hour12: false });
     }
 
+    function getCookie(name) {
+        const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
+        return match ? decodeURIComponent(match[1]) : "";
+    }
+
+    function csrfHeaders() {
+        return { "X-CSRF-Token": getCookie("csrf_token") };
+    }
+
     function escapeHtml(text) {
         return String(text)
             .replaceAll("&", "&amp;")
@@ -79,7 +88,7 @@
         appendConsole(`Running ${tool.replaceAll("_", " ")}...`);
 
         try {
-            const response = await fetch(`/api/system/tools/${tool}`, { method: "POST" });
+            const response = await fetch(`/api/system/tools/${tool}`, { method: "POST", headers: csrfHeaders() });
             if (response.status === 401) {
                 window.location.href = "/login";
                 return;
@@ -270,5 +279,5 @@
         setInterval(() => refreshSystem(false), 2000);
     }
 
-    window.moHelpdesk = { toast, appendConsole };
+    window.moHelpdesk = { toast, appendConsole, csrfHeaders };
 })();

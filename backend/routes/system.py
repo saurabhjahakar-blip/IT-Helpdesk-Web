@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session as DbSession
 
-from backend.auth.dependencies import require_api_user
+from backend.auth.dependencies import require_api_user, require_csrf
 from backend.db.models import Role, User
 from backend.db.session import get_db
 from backend.services.system_service import get_system_info
@@ -51,6 +51,7 @@ def open_windows_tool(
     request: Request,
     user: User = Depends(require_api_user),
     db: DbSession = Depends(get_db),
+    _csrf: None = Depends(require_csrf),
 ):
     try:
         return launch_tool(tool_name, user=user, db=db, ip_address=_client_ip(request))
@@ -70,6 +71,7 @@ def run_ping(
     request: Request,
     user: User = Depends(require_api_user),
     db: DbSession = Depends(get_db),
+    _csrf: None = Depends(require_csrf),
 ):
     try:
         return launch_tool(
@@ -90,6 +92,7 @@ def power_cancel(
     request: Request,
     user: User = Depends(require_api_user),
     db: DbSession = Depends(get_db),
+    _csrf: None = Depends(require_csrf),
 ):
     try:
         return launch_tool("cancel_power", user=user, db=db, ip_address=_client_ip(request))

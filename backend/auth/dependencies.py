@@ -44,5 +44,12 @@ def require_technician(user: User = Depends(require_api_user)) -> User:
     return user
 
 
+def require_csrf(request: Request) -> None:
+    cookie_value = request.cookies.get(settings.csrf_cookie_name)
+    header_value = request.headers.get("X-CSRF-Token")
+    if not cookie_value or not header_value or cookie_value != header_value:
+        raise HTTPException(status_code=403, detail="Missing or invalid CSRF token")
+
+
 async def auth_redirect_handler(request: Request, exc: AuthRedirect) -> RedirectResponse:
     return RedirectResponse(url=f"/login?next={exc.next_path}", status_code=303)

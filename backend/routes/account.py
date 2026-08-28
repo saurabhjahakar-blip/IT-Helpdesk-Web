@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session as DbSession
 
-from backend.auth.dependencies import require_api_user
+from backend.auth.dependencies import require_api_user, require_csrf
 from backend.auth.service import revoke_other_sessions
 from backend.config import get_settings
 from backend.db.models import User
@@ -25,7 +25,13 @@ def change_password(
     request: Request,
     user: User = Depends(require_api_user),
     db: DbSession = Depends(get_db),
+    _csrf: None = Depends(require_csrf),
 ):
+    if user.auth_source != "local":
+        raise HTTPException(
+            status_code=403,
+            detail="Your password is managed by your organization's directory and can't be changed here.",
+        )
     if not verify_password(payload.current_password, user.password_hash):
         raise HTTPException(status_code=400, detail="Current password is incorrect")
     if payload.new_password != payload.confirm_password:

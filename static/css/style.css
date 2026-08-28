@@ -132,6 +132,16 @@ a {
     font-weight: 600;
 }
 
+.nav-item-highlight {
+    color: #fb923c;
+    margin-top: 4px;
+}
+
+.nav-item-highlight:hover {
+    background: rgba(251, 146, 60, 0.15);
+    color: #fb923c;
+}
+
 .sidebar-footer {
     margin-top: 12px;
     padding-top: 8px;

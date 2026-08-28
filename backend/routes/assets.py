@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session as DbSession
 
-from backend.auth.dependencies import require_api_user
+from backend.auth.dependencies import require_api_user, require_csrf
 from backend.db.models import User
 from backend.db.session import get_db
 from backend.services.asset_service import capture_snapshot, list_snapshots
@@ -10,7 +10,11 @@ router = APIRouter()
 
 
 @router.post("/snapshot")
-def snapshot(user: User = Depends(require_api_user), db: DbSession = Depends(get_db)):
+def snapshot(
+    user: User = Depends(require_api_user),
+    db: DbSession = Depends(get_db),
+    _csrf: None = Depends(require_csrf),
+):
     result = capture_snapshot(db, user)
     return {"id": result.id, "captured_at": result.captured_at.isoformat()}
 
