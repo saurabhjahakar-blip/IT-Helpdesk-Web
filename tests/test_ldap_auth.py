@@ -11,8 +11,8 @@ settings = get_settings()
 
 
 _UPN_TO_DN = {
-    "jane@ad.xecurify.com": "CN=Jane Doe,OU=Users,DC=ad,DC=xecurify,DC=com",
-    "bob@ad.xecurify.com": "CN=Bob Smith,OU=Users,DC=ad,DC=xecurify,DC=com",
+    "jane@xecurify.com": "CN=Jane Doe,OU=Users,DC=ad,DC=xecurify,DC=com",
+    "bob@xecurify.com": "CN=Bob Smith,OU=Users,DC=ad,DC=xecurify,DC=com",
 }
 
 
@@ -21,22 +21,22 @@ def _mock_directory():
     conn = Connection(server, client_strategy=MOCK_SYNC)
     conn.open()
     conn.strategy.add_entry(
-        _UPN_TO_DN["jane@ad.xecurify.com"],
+        _UPN_TO_DN["jane@xecurify.com"],
         {
             "userPassword": "correct-pass1",
             "mail": "jane@xecurify.com",
             "displayName": "Jane Doe",
-            "userPrincipalName": "jane@ad.xecurify.com",
+            "userPrincipalName": "jane@xecurify.com",
             "memberOf": ["CN=IT-Technicians,OU=Groups,DC=ad,DC=xecurify,DC=com"],
         },
     )
     conn.strategy.add_entry(
-        _UPN_TO_DN["bob@ad.xecurify.com"],
+        _UPN_TO_DN["bob@xecurify.com"],
         {
             "userPassword": "correct-pass2",
             "mail": "bob@xecurify.com",
             "displayName": "Bob Smith",
-            "userPrincipalName": "bob@ad.xecurify.com",
+            "userPrincipalName": "bob@xecurify.com",
             "memberOf": [],
         },
     )

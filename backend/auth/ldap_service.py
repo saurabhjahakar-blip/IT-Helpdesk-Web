@@ -38,7 +38,11 @@ def authenticate_ldap(
     if not password:
         return None
 
-    upn = username if "@" in username else f"{username}@{settings.ldap_domain}"
+    # AD often uses a shorter, email-style UPN suffix (e.g. xecurify.com) that
+    # differs from the internal domain used to actually connect (ad.xecurify.com)
+    # — both are valid within the same forest, so a bind against ldap_domain's
+    # DC with a ldap_upn_suffix-style UPN works fine.
+    upn = username if "@" in username else f"{username}@{settings.ldap_upn_suffix}"
 
     try:
         conn = connection_factory(upn, password)

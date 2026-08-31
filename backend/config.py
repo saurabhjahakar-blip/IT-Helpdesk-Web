@@ -26,11 +26,19 @@ class Settings(BaseSettings):
     login_rate_limit_window_minutes: int = 15
 
     # Active Directory / LDAP auth (off by default — existing local accounts
-    # keep working until this is explicitly enabled with confirmed values).
+    # keep working until this is explicitly enabled). Values below were
+    # confirmed against the real directory on 2026-08-31 via
+    # scripts/ldap_diagnose.py.
     ldap_enabled: bool = False
-    ldap_domain: str = "ad.xecurify.com"
-    ldap_technician_group: str = "IT-Technicians"
-    ldap_use_ssl: bool = True
+    ldap_domain: str = "ad.xecurify.com"  # internal AD domain — used to connect/search
+    ldap_upn_suffix: str = "xecurify.com"  # login suffix, e.g. firstname.lastname@xecurify.com
+    ldap_technician_group: str = "it"  # CN=it,OU=Org,OU=Groups,OU=xecurify — confirmed real group
+    # LDAPS (636) resets during the TLS handshake in this environment
+    # (network security appliance doing SSL inspection is the leading
+    # suspect) — plain LDAP (389) binds successfully. This trades
+    # confidentiality of the bind for working auth; revisit once whatever's
+    # intercepting 636 is identified, or try StartTLS over 389 instead.
+    ldap_use_ssl: bool = False
 
 
 @lru_cache

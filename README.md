@@ -31,24 +31,42 @@ first time someone logs in, with no separate account to provision — set:
 
 ```
 LDAP_ENABLED=true
-LDAP_DOMAIN=ad.xecurify.com          # confirm this is your real AD domain
-LDAP_TECHNICIAN_GROUP=IT-Technicians # AD group whose members get the technician role
-LDAP_USE_SSL=true
 ```
 
-**Confirm both values above before flipping `LDAP_ENABLED` on** — `LDAP_DOMAIN`
-was inferred from this dev machine's own DNS suffix and may not be your real
-domain; `LDAP_TECHNICIAN_GROUP` needs to be the actual AD group name you want
-mapped to the technician role.
+The remaining values (`LDAP_DOMAIN=ad.xecurify.com`, `LDAP_UPN_SUFFIX=xecurify.com`,
+`LDAP_TECHNICIAN_GROUP=it`, `LDAP_USE_SSL=false`) are now the code defaults —
+**confirmed against the real directory on 2026-08-31** via `scripts/ldap_diagnose.py`:
+- Logins use `firstname.lastname@xecurify.com` (the UPN suffix), which is
+  different from the internal AD domain (`ad.xecurify.com`) used to actually
+  connect — both are handled separately (`ldap_domain` vs `ldap_upn_suffix`).
+- The technician group is `CN=it,OU=Org,OU=Groups,OU=xecurify` — plain `it`,
+  not the originally-guessed `IT-Technicians`.
+- **LDAPS (port 636) resets during the TLS handshake in this network**
+  (`[WinError 10054]`, a network security appliance doing SSL inspection is
+  the leading suspect) — plain LDAP (389) binds successfully, so that's the
+  default for now. This means credentials travel unencrypted between this
+  app and the DC — acceptable for now on a trusted internal network, but
+  worth fixing properly later (find what's intercepting 636, or try
+  StartTLS over 389 instead — `scripts/ldap_diagnose.py` can be extended to
+  test that path).
 
-How it works: the app binds directly to AD as the logging-in user
-(`username@your-domain`, no separate service account needed), which both
-verifies their password and lets it read their own `memberOf` attribute for
-role mapping. A local account with `auth_source=local` (any account made via
-`create-user`) still works even when LDAP is enabled — that's the intended
-break-glass path if AD is ever unreachable. Local accounts created via
-`create-user` after LDAP is enabled are for that purpose only; everyone else
-should just log in with their normal AD credentials.
+If any of these change in your environment, override them via env vars —
+no code changes needed.
+
+How it works: the app binds directly to AD as the logging-in user, which
+both verifies their password and lets it read their own `memberOf`
+attribute for role mapping. A local account with `auth_source=local` (any
+account made via `create-user`) still works even when LDAP is enabled —
+that's the intended break-glass path if AD is ever unreachable. Local
+accounts created via `create-user` after LDAP is enabled are for that
+purpose only; everyone else should just log in with `firstname.lastname`
+and their normal AD password.
+
+**Debugging a failed AD login**: the app intentionally returns a generic
+"invalid email or password" for any failure (security — it never reveals
+*why*). Run `python scripts/ldap_diagnose.py` yourself (it prompts for your
+own credentials locally, never shares them) to see the real DNS/TCP/TLS/bind
+result, including AD's actual error code if the bind itself fails.
 
 ## Config
 
