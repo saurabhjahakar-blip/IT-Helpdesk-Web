@@ -1,4 +1,4 @@
-# miniOrange IT Helpdesk Tool
+# miniOrange ITNexus
 
 Internal FastAPI + vanilla-JS Windows diagnostics and maintenance tool. Both
 employees (self-service diagnostics) and IT technicians use the same app.

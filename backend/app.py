@@ -31,7 +31,7 @@ async def _lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="miniOrange IT Helpdesk Tool", lifespan=_lifespan)
+app = FastAPI(title="miniOrange ITNexus", lifespan=_lifespan)
 app.add_exception_handler(AuthRedirect, auth_redirect_handler)
 
 
@@ -93,7 +93,7 @@ NAV_ITEMS = [
 def _render(request: Request, template: str, active: str, page_title: str, page_subtitle: str, user: User, **extra):
     system = get_system_info()
     context = {
-        "title": "miniOrange IT Helpdesk Tool",
+        "title": "miniOrange ITNexus",
         "page_title": page_title,
         "page_subtitle": page_subtitle,
         "active_nav": active,
@@ -239,7 +239,7 @@ async def about_page(request: Request, user: User = Depends(require_page_user)):
         "section.html",
         "about",
         "About",
-        "miniOrange IT Helpdesk Tool",
+        "miniOrange ITNexus",
         user,
         section_message="Version 1.0.0 — Local Windows helpdesk dashboard for system diagnostics, network checks, and maintenance actions.",
     )

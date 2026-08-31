@@ -177,11 +177,11 @@ def performance_logs() -> CommandResult:
 
 
 def restart_pc() -> CommandResult:
-    return run_command(["shutdown", "/r", "/t", "5", "/c", "Restart requested from miniOrange IT Helpdesk"])
+    return run_command(["shutdown", "/r", "/t", "5", "/c", "Restart requested from miniOrange ITNexus"])
 
 
 def shutdown_pc() -> CommandResult:
-    return run_command(["shutdown", "/s", "/t", "5", "/c", "Shutdown requested from miniOrange IT Helpdesk"])
+    return run_command(["shutdown", "/s", "/t", "5", "/c", "Shutdown requested from miniOrange ITNexus"])
 
 
 def cancel_power() -> CommandResult:
