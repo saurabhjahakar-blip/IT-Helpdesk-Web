@@ -23,11 +23,16 @@ async def _worker(client: httpx.AsyncClient, path: str, latencies: list[float], 
         if response.status_code != 200:
             errors.append(f"{path} -> HTTP {response.status_code}")
     except Exception as exc:
-        errors.append(f"{path} -> {exc}")
+        detail = str(exc) or "(no message)"
+        errors.append(f"{path} -> {type(exc).__name__}: {detail}")
 
 
 async def run(base_url: str, email: str, password: str, total_requests: int, concurrency: int) -> None:
-    async with httpx.AsyncClient(base_url=base_url, timeout=30) as client:
+    # Match the client's own connection pool to the requested concurrency —
+    # otherwise httpx's default pool cap (100 connections) becomes the
+    # bottleneck being measured instead of the server's.
+    limits = httpx.Limits(max_connections=concurrency + 10, max_keepalive_connections=concurrency + 10)
+    async with httpx.AsyncClient(base_url=base_url, timeout=30, limits=limits) as client:
         login = await client.post("/login", data={"email": email, "password": password, "next": "/"})
         if login.status_code not in (200, 303):
             print(f"Login failed: HTTP {login.status_code}")
