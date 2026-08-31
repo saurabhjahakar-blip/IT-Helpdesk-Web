@@ -68,6 +68,10 @@ and their normal AD password.
 own credentials locally, never shares them) to see the real DNS/TCP/TLS/bind
 result, including AD's actual error code if the bind itself fails.
 
+AD login has been live-verified end-to-end (2026-08-31) with a real account
+— JIT-provisioning and technician-role mapping via the `it` group both
+confirmed working against the real directory, not just in tests.
+
 ## Config
 
 Environment variables (all optional, sensible defaults apply) or a `.env`
@@ -80,7 +84,7 @@ file in the repo root:
 | `HOST`, `PORT` | what `run_prod.bat` binds to (default `127.0.0.1:8000`) |
 | `SSL_KEYFILE`, `SSL_CERTFILE` | set both to have `run_prod.bat` terminate TLS directly |
 | `LOGIN_RATE_LIMIT_ATTEMPTS`, `LOGIN_RATE_LIMIT_WINDOW_MINUTES` | login lockout policy (default 5 attempts / 15 min) |
-| `LDAP_ENABLED`, `LDAP_DOMAIN`, `LDAP_TECHNICIAN_GROUP`, `LDAP_USE_SSL` | see above |
+| `LDAP_ENABLED`, `LDAP_DOMAIN`, `LDAP_UPN_SUFFIX`, `LDAP_TECHNICIAN_GROUP`, `LDAP_USE_SSL` | see above |
 | `TICKETING_URL` | shown as "Raise a Ticket" in the nav and on generated reports |
 
 ## Running
@@ -104,8 +108,12 @@ Both serve on `127.0.0.1:8000` by default. Sign in at `/login`.
 This app currently assumes single-worker, per-machine deployment — the
 power-action cooldown and login rate-limiter keep their state in memory, so
 running multiple `uvicorn` workers would fragment that state across
-processes (fine to revisit if load testing ever shows it's needed; see
-`scripts/loadtest.py`).
+processes. This hasn't been a real constraint in practice: load testing
+(`scripts/loadtest.py`, 2026-08-31) found and fixed a connection-pool
+bottleneck (see `backend/db/session.py`) and, after that fix, a single
+worker handled 600 requests at 100-way concurrency in ~10s with zero
+errors. SQLite was never the limiting factor — a Postgres migration is not
+needed for this app's actual (per-machine) load profile.
 
 To expose it on the LAN instead of loopback-only:
 1. Get a TLS certificate — a self-signed one for internal testing
@@ -115,6 +123,10 @@ To expose it on the LAN instead of loopback-only:
 2. Set `SECURE_COOKIES=true` (cookies won't be sent over plain HTTP once this is on).
 3. Set `HOST=0.0.0.0` (or a specific interface) and `PORT` as needed.
 4. Run `run_prod.bat`.
+
+Access it via an internal DNS hostname rather than a raw IP address — this
+is the intended access pattern (and required if you want a proper TLS cert,
+since certs are issued for hostnames, not IPs).
 
 A `GET /healthz` endpoint (no auth) is available for uptime monitoring.
 
@@ -137,11 +149,13 @@ pytest -v
 
 CI runs the same suite on every push/PR via `.github/workflows/tests.yml`.
 `scripts/loadtest.py` is a manual sanity check (not part of the suite) for
-concurrent-load behavior against a running instance.
+concurrent-load behavior against a running instance — see "Deploying beyond
+localhost" above for its most recent results.
 
 ## Notes
 
 - Every tool invocation (launch/command/power) and every login/logout/lockout
   event is audited to the `audit_log` table and to `logs/audit.log` (JSON
   lines), including who, success/failure, and timing.
-- SQLite database lives at `data/helpdesk.db`.
+- SQLite database lives at `data/helpdesk.db` (WAL mode, `pool_size=40`/
+  `max_overflow=40`, `busy_timeout=5000` — see `backend/db/session.py`).
